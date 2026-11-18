@@ -1,0 +1,28 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="trueaura"
+version="${mod_version}"
+displayName="True Aura"
+displayTest="IGNORE_ALL_VERSION"
+authors="True Aura"
+description='''
+Animated, customizable auras inspired by Shin.
+Press R to toggle and O to customize. Install on server and clients to share auras.
+'''
+
+[[dependencies.trueaura]]
+modId="forge"
+mandatory=true
+versionRange="[47.4.0,48)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.trueaura]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.20.2)"
+ordering="NONE"
+side="BOTH"

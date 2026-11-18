@@ -1,0 +1,30 @@
+// Fast, offline tests of the animation and geometry without bootstrapping Forge.
+plugins { id 'java' }
+repositories { mavenCentral() }
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+sourceSets {
+    main.java {
+        srcDirs = ['../src/main/java']
+        include 'dev/trueaura/client/AuraState.java', 'dev/trueaura/client/AuraMesh.java'
+        include 'dev/trueaura/client/AuraPreviewFraming.java', 'dev/trueaura/client/AuraBurst.java'
+        include 'dev/trueaura/client/CustomAuraMesh.java'
+        include 'dev/trueaura/aura/**'
+        include 'dev/trueaura/network/AuraServerState.java'
+        include 'dev/trueaura/network/AuraCommandUpdates.java'
+        include 'dev/trueaura/network/AuraSnapshot.java', 'dev/trueaura/network/AuraPacketCodec.java', 'dev/trueaura/network/AuraUpdateQueue.java'
+    }
+    test.java {
+        srcDirs = ['../src/test/java']
+        include 'dev/trueaura/aura/**', 'dev/trueaura/client/AuraStateTest.java', 'dev/trueaura/client/AuraMeshTest.java'
+        include 'dev/trueaura/client/AuraPreviewFramingTest.java', 'dev/trueaura/client/AuraBurstTest.java'
+        include 'dev/trueaura/client/CustomAuraMeshTest.java'
+        include 'dev/trueaura/network/**'
+    }
+}
+dependencies {
+    implementation 'com.google.code.gson:gson:2.10.1'
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+test { useJUnitPlatform() }

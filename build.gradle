@@ -1,0 +1,91 @@
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle' version '6.0.54'
+}
+
+version = '0.9.0'
+group = 'dev.trueaura'
+base { archivesName = 'trueaura' }
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+
+sourceSets {
+    importTest {
+        java.srcDir 'tools/import-test/java'
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+    shaderTest {
+        java.srcDir 'tools/shader-test/java'
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+
+minecraft {
+    mappings channel: 'official', version: '1.20.1'
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
+    runs {
+        client {
+            workingDirectory project.file(project.findProperty('auraRunDir') ?: 'run')
+            property 'forge.logging.console.level', 'info'
+            if (project.findProperty('auraEpicFight') == 'true') {
+                // External production mixins need SRG -> named refmap remapping in userdev.
+                property 'mixin.env.remapRefMap', 'true'
+                property 'mixin.env.refMapRemappingFile', project.file('build/createSrgToMcp/output.srg').absolutePath
+            }
+            args '--username', (project.findProperty('auraUser') ?: 'AuraDev'), '--width', '1280', '--height', '800'
+            if (project.findProperty('auraShaderTest') == 'true') {
+                args '--quickPlaySingleplayer', 'AuraShaderTest'
+            }
+            if (project.findProperty('auraImportTest') == 'true') {
+                if (project.findProperty('auraMultiTest') != 'true') args '--quickPlaySingleplayer', 'AuraImportTest'
+            }
+            mods { trueaura {
+                if (project.findProperty('auraImportTest') == 'true') source sourceSets.importTest
+                source sourceSets.main
+                if (project.findProperty('auraShaderTest') == 'true') source sourceSets.shaderTest
+            } }
+        }
+        server {
+            workingDirectory project.file('run-server')
+            if (project.findProperty('auraEpicFight') == 'true') {
+                property 'mixin.env.remapRefMap', 'true'
+                property 'mixin.env.refMapRemappingFile', project.file('build/createSrgToMcp/output.srg').absolutePath
+            }
+            args '--nogui'
+            mods { trueaura { source sourceSets.main } }
+        }
+    }
+}
+
+repositories {
+    flatDir { dirs '.tools/shader-test/mods' }
+    mavenCentral()
+    maven { url = 'https://api.modrinth.com/maven' }
+}
+dependencies {
+    minecraft 'net.minecraftforge:forge:1.20.1-47.4.23'
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    if (project.findProperty('auraShaderTest') == 'true') {
+        runtimeOnly fg.deobf('local.shader:oculus:1.8.0')
+        runtimeOnly fg.deobf('local.shader:embeddium:0.3.31')
+    }
+    // Optional development runtime only. The shipped mod remains independent of Epic Fight.
+    if (project.findProperty('auraEpicFight') == 'true') {
+        runtimeOnly fg.deobf('maven.modrinth:epic-fight:20.14.17-mc1.20.1-forge')
+    }
+}
+
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+tasks.named('test') { useJUnitPlatform() }
+tasks.named('processResources', ProcessResources).configure {
+    inputs.property 'version', project.version
+    filesMatching('META-INF/mods.toml') { expand mod_version: project.version }
+}
+tasks.named('jar', Jar).configure {
+    archiveVersion = "${project.version}-forge-1.20.1"
+    manifest.attributes('Implementation-Title': 'True Aura', 'Implementation-Version': project.version)
+    finalizedBy 'reobfJar'
+}

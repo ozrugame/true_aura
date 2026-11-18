@@ -1,0 +1,16 @@
+.gradle/
+build/
+run/
+run-*/
+.idea/
+*.iml
+.DS_Store
+.tools/
+
+# Local runtime, generated packages and secrets
+logs/
+crash-reports/
+release/
+.env
+.env.*
+*.log

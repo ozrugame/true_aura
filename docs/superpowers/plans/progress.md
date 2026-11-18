@@ -1,0 +1,23 @@
+# Execution ledger — 2026-11-09-shin-aura.md
+
+- Design approved; plan self-reviewed against all design sections.
+- Ruling: execute inline under existing authorization; no additional approval round.
+- Ruling: use existing Forge 47.4.23 cache and JDK 17; no global config changes.
+- Ruling: workspace has no git repository, so use a local ledger instead of git-based skill scripts.
+- Pre-flight: task 2 consumes AuraState opacity/time and bounded config from task 1; no conflicting interfaces.
+- Task 1: complete. Initial tests failed against empty behavior; six tests then passed. Forge compile/build succeeded.
+- Task 2: complete. Three bounded procedural shells, custom shaders, depth testing, key/config/language integration implemented. Mesh tests cover seams, long sessions, motion and crouch height.
+- Environment finding: default Java TLS handshake failed on libraries.minecraft.net; TLS 1.2 succeeded with certificate validation still enabled. No trust store or certificate checks changed.
+- Runtime: isolated Forge development client launched and entered a new world. User confirmed seeing the aura after R/F5. Native CUA could not bind the Java process; no agent-observed visual comparison is claimed.
+- Final reviewer found world-unload reset and Fabulous target-depth issues; both addressed. Also fixed 20-minute animation phase snap after watching the added regression test fail.
+- Final build: `./gradlew test build -Dhttps.protocols=TLSv1.2` succeeded; 8 tests, 0 failures.
+- Ruling: no framework-mirroring mock test for event registration/OpenGL render state; document runtime visual checks that remain instead.
+- Ruling: final Fabulous changes compiled and reviewed against vanilla compositor source, but not visually rechecked. User's visible-aura confirmation applies to the pre-review-fix development run.
+- Task 3: pending corrected build and packaging. No existing Minecraft installations modified. Development client exited normally after saving its test world.
+- User correction: aura looks like a rigid, stationary mass even while the player can move. Visibility confirmation alone was insufficient.
+- Diagnosis: continuous outer-shell opacity and weak/nested time warping produce a tube with subtle sway instead of clearly rising flames. The new half-second tip-motion regression failed against previous geometry.
+- Changed source: remove the shell-opacity floor; explicitly upward-moving highlights; stronger tip/radial deformation.
+- Blocker: repeat elevated Gradle build was not executed because automatic approval review reached a usage quota, not because the action was judged unsafe. Do not describe the old jar as containing the visual fix.
+- Source-only validation: all 9 JUnit tests pass using javac/JUnit with read-only cached libraries and temporary output under /tmp, inside the filesystem sandbox. This is not a replacement claim for a Forge build or an in-game test.
+- Prepared rebuild-and-run.command for the user to run the pending Gradle build and isolated client; not executed by the assistant.
+- 2026-11-09 14:33 Asia/Vientiane: user requested retry. Approval succeeded; rebuild-and-run.command compiled/reobfuscated current source, all 9 tests passed, and updated client finished loading shaders/resources. Copied corrected jar to release and recorded SHA-256. Prior usage-limit blocker is resolved. Visual validation of the stronger animation remains pending.
