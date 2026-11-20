@@ -34,6 +34,9 @@ public final class AuraClient {
     private static final AuraState STATE = new AuraState();
     private static final Map<UUID, Visual> REMOTE = new HashMap<>();
     private static AuraSettings draft;
+    private static final AuraPreviewAnimation PREVIEW = new AuraPreviewAnimation();
+    public static void replayPreview() { if (draft != null) PREVIEW.start(draft.animation()); }
+    public static float previewOpacity(float partial) { return PREVIEW.opacity(partial); }
     private static boolean needsSync = true;
     private static final org.joml.Matrix4f shaderView = new org.joml.Matrix4f();
     private static final org.joml.Matrix3f shaderNormal = new org.joml.Matrix3f();
@@ -57,9 +60,10 @@ public final class AuraClient {
     }
     public static AuraSettings settings() { return limits().apply(AuraConfig.settings()); }
     public static void preview(AuraSettings settings) { draft = settings; }
-    public static void clearPreview() { draft = null; }
+    public static void clearPreview() { draft = null; PREVIEW.clear(); }
     public static void saveSettings(AuraSettings settings) {
         AuraConfig.save(limits().apply(settings));
+        STATE.configure(settings.animation());
         needsSync = true;
     }
     public static boolean isAuraEnabled() { return STATE.enabled(); }
@@ -76,6 +80,7 @@ public final class AuraClient {
         if (mc.player == null || mc.level == null) return;
         boolean changed = STATE.enabled() != snapshot.enabled();
         AuraConfig.save(snapshot.settings());
+        STATE.configure(snapshot.settings().animation());
         STATE.setEnabled(snapshot.enabled());
         needsSync = false;
         if (mc.screen instanceof AuraSettingsScreen screen) screen.applyServerSettings(snapshot.settings());
@@ -96,6 +101,7 @@ public final class AuraClient {
             AuraBurstEffects.start(mc.level.getPlayerByUUID(id), snapshot.settings(), snapshot.enabled());
         }
         AuraState state = prior == null ? new AuraState() : prior.state();
+        state.configure(snapshot.settings().animation());
         state.setEnabled(snapshot.enabled());
         REMOTE.put(id, new Visual(snapshot.settings(), state));
     }
@@ -104,7 +110,7 @@ public final class AuraClient {
         STATE.reset();
         REMOTE.clear();
         AuraBurstEffects.clear();
-        draft = null;
+        clearPreview();
         needsSync = true;
     }
 
@@ -121,6 +127,7 @@ public final class AuraClient {
         while (SETTINGS.consumeClick()) {
             if (mc.screen == null) mc.setScreen(new AuraSettingsScreen(null));
         }
+        STATE.configure(settings().animation());
         while (TOGGLE.consumeClick()) {
             if (mc.screen == null) {
                 STATE.toggle();
@@ -132,8 +139,17 @@ public final class AuraClient {
         }
         if (!mc.isPaused()) {
             STATE.tick(true);
+            STATE.motion().tick(mc.player.getX(), mc.player.getY(), mc.player.getZ(), mc.player.yBodyRot);
+            if (draft != null) PREVIEW.tick();
             AuraBurstEffects.tick();
-            for (Visual visual : REMOTE.values()) visual.state().tick(true);
+            for (var entry : REMOTE.entrySet()) {
+                Visual visual = entry.getValue();
+                visual.state().configure(visual.settings().animation());
+                visual.state().tick(true);
+                var player = mc.level.getPlayerByUUID(entry.getKey());
+                if (player == null) visual.state().motion().reset();
+                else visual.state().motion().tick(player.getX(), player.getY(), player.getZ(), player.yBodyRot);
+            }
         }
         if (needsSync && isShared()) {
             AuraNetwork.sendToServer(settings(), STATE.enabled());

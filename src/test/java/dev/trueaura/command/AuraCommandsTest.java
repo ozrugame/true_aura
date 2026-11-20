@@ -25,7 +25,7 @@ class AuraCommandsTest {
         var player = source(0);
         for (String command : new String[]{"on", "off", "toggle", "status", "reset", "set color main gold",
             "set color highlight FFFFFF", "set color base pink", "set intensity 5", "set size 4", "set size 0.5",
-            "set speed 3", "set shape lotus", "set copy_shape Steve", "set open_effect epicfight:ground_slam",
+            "set appear instant", "set appear rise", "set disappear fade", "set fade_in 1.5", "set fade_out 0.05", "set motion 0", "set speed 3", "set shape lotus", "set copy_shape Steve", "set open_effect epicfight:ground_slam",
             "set close_effect minecraft:dust 1 0 0 1"}) {
             for (String prefix : new String[]{"aura ", "aura self "}) {
                 var parsed = dispatcher.parse(prefix + command, player);
@@ -49,7 +49,7 @@ class AuraCommandsTest {
     }
     @Test void outOfRangeAndNonNumericValuesAreRejected() {
         var dispatcher = dispatcher();
-        for (String arg : new String[]{"intensity 0", "intensity 33", "size .4", "size 33", "speed 0", "speed 4", "speed NaN", "speed Infinity"}) {
+        for (String arg : new String[]{"fade_in 0", "fade_out 5.1", "motion 2.1", "motion NaN", "intensity 0", "intensity 33", "size .4", "size 33", "speed 0", "speed 4", "speed NaN", "speed Infinity"}) {
             var parsed = dispatcher.parse("aura set " + arg, source(0));
             assertFalse(parsed.getExceptions().isEmpty(), arg);
         }

@@ -9,6 +9,16 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AuraPacketCodecTest {
+    @Test void animationSettingsSurviveEveryWireMessage() {
+        var animation=new dev.trueaura.aura.AuraAnimation(true,false,32,25,1.7);
+        var state=new AuraSnapshot(AuraSettings.DEFAULT.withAnimation(animation),true);
+        assertEquals(state,AuraPacketCodec.decodeUpdate(AuraPacketCodec.encodeUpdate(state)));
+        var revision=new AuraPacketCodec.RevisionSnapshot(3,state);
+        assertEquals(revision,AuraPacketCodec.decodeRevision(AuraPacketCodec.encodeRevision(revision)));
+        var player=new AuraPacketCodec.PlayerSnapshot(UUID.randomUUID(),state);
+        assertEquals(player,AuraPacketCodec.decodeSnapshot(AuraPacketCodec.encodeSnapshot(player)));
+    }
+
     @Test void importedDefinitionTravelsWithoutAnyLocalFile() {
         var custom = dev.trueaura.aura.CustomAura.parse("""
             {"version":1,"id":"test:halo","name":"Halo","pattern":"pulse",

@@ -84,5 +84,17 @@
   "command.trueaura.limit": "ค่าสูงสุดของ %s ในโลกนี้คือ %s (trueaura-server.toml)",
   "screen.trueaura.import_folder": "เปิดโฟลเดอร์",
   "screen.trueaura.import_reload": "โหลดไฟล์ใหม่",
-  "screen.trueaura.import_report": "โหลดออร่า %s แบบ; พบข้อผิดพลาด %s รายการ"
+  "screen.trueaura.import_report": "โหลดออร่า %s แบบ; พบข้อผิดพลาด %s รายการ",
+  "screen.trueaura.motion.tab": "ขยับ",
+  "screen.trueaura.motion.appear": "ปรากฏ: %s",
+  "screen.trueaura.motion.disappear": "หายไป: %s",
+  "screen.trueaura.motion.instant": "ทันที",
+  "screen.trueaura.motion.fade": "ค่อย ๆ",
+  "screen.trueaura.motion.test": "ลอง",
+  "screen.trueaura.motion.test_hint": "ลองจังหวะปรากฏและหายไป เห็นเฉพาะคุณ ไม่เปลี่ยนสถานะจริง",
+  "screen.trueaura.motion.fade_in": "เวลาเปิด (วินาที)",
+  "screen.trueaura.motion.fade_out": "เวลาปิด (วินาที)",
+  "screen.trueaura.motion.strength": "แรงกระเพื่อม",
+  "screen.trueaura.motion.strength_hint": "แรงหน่วงและกระเพื่อมตามการเดิน เลี้ยว และกระโดด ตั้ง 0 เพื่อปิด",
+  "screen.trueaura.motion.rise": "ลุกจากเท้า"
 }

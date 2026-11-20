@@ -84,5 +84,17 @@
   "command.trueaura.limit": "Maximum %s in this world: %s (trueaura-server.toml)",
   "screen.trueaura.import_folder": "Open folder",
   "screen.trueaura.import_reload": "Reload files",
-  "screen.trueaura.import_report": "Loaded %s custom auras; %s error(s)."
+  "screen.trueaura.import_report": "Loaded %s custom auras; %s error(s).",
+  "screen.trueaura.motion.tab": "Motion",
+  "screen.trueaura.motion.appear": "Appear: %s",
+  "screen.trueaura.motion.disappear": "Disappear: %s",
+  "screen.trueaura.motion.instant": "Instant",
+  "screen.trueaura.motion.fade": "Fade",
+  "screen.trueaura.motion.test": "Test",
+  "screen.trueaura.motion.test_hint": "Preview appearance then disappearance. Only you see this test.",
+  "screen.trueaura.motion.fade_in": "Fade in (s)",
+  "screen.trueaura.motion.fade_out": "Fade out (s)",
+  "screen.trueaura.motion.strength": "Movement",
+  "screen.trueaura.motion.strength_hint": "Spring lag and ripples follow walking, turning and jumping. Set 0 to disable.",
+  "screen.trueaura.motion.rise": "Rise"
 }

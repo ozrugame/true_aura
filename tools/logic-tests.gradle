@@ -7,7 +7,7 @@ sourceSets {
         srcDirs = ['../src/main/java']
         include 'dev/trueaura/client/AuraState.java', 'dev/trueaura/client/AuraMesh.java'
         include 'dev/trueaura/client/AuraPreviewFraming.java', 'dev/trueaura/client/AuraBurst.java'
-        include 'dev/trueaura/client/CustomAuraMesh.java'
+        include 'dev/trueaura/client/CustomAuraMesh.java', 'dev/trueaura/client/AuraMotion.java', 'dev/trueaura/client/AuraReveal.java', 'dev/trueaura/client/AuraPreviewAnimation.java'
         include 'dev/trueaura/aura/**'
         include 'dev/trueaura/network/AuraServerState.java'
         include 'dev/trueaura/network/AuraCommandUpdates.java'
@@ -17,7 +17,7 @@ sourceSets {
         srcDirs = ['../src/test/java']
         include 'dev/trueaura/aura/**', 'dev/trueaura/client/AuraStateTest.java', 'dev/trueaura/client/AuraMeshTest.java'
         include 'dev/trueaura/client/AuraPreviewFramingTest.java', 'dev/trueaura/client/AuraBurstTest.java'
-        include 'dev/trueaura/client/CustomAuraMeshTest.java'
+        include 'dev/trueaura/client/CustomAuraMeshTest.java', 'dev/trueaura/client/AuraMotionTest.java', 'dev/trueaura/client/AuraRevealTest.java', 'dev/trueaura/client/AuraPreviewAnimationTest.java'
         include 'dev/trueaura/network/**'
     }
 }

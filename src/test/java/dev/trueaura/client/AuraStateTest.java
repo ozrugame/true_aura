@@ -4,6 +4,21 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AuraStateTest {
+    @Test void instantModeChangesTheFirstRenderedFrameAndFadeDurationsAreIndependent() {
+        AuraState state=new AuraState();
+        state.configure(new dev.trueaura.aura.AuraAnimation(true,false,40,20,1));
+        state.setEnabled(true);
+        assertEquals(1,state.opacity(0)); assertEquals(1,state.opacity(.5f));
+        state.setEnabled(false); state.tick(true);
+        assertEquals(.95,state.opacity(1),1e-5);
+        for(int i=0;i<19;i++) state.tick(true);
+        assertEquals(0,state.opacity(1),1e-5);
+        state.configure(new dev.trueaura.aura.AuraAnimation(false,true,40,20,1));
+        state.setEnabled(true); for(int i=0;i<20;i++) state.tick(true);
+        assertEquals(.5,state.opacity(1),1e-5);
+        state.setEnabled(false); assertEquals(0,state.opacity(0));
+    }
+
     @Test void startsOffAndFadesBothDirectionsWithoutOvershoot() {
         AuraState state = new AuraState();
         assertFalse(state.enabled());

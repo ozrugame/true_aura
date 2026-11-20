@@ -69,16 +69,18 @@ public final class AuraSettingsScreen extends Screen {
         clearWidgets();
         int x = panelX + 10;
         int contentWidth = panelWidth - 20;
-        int tabWidth = (contentWidth - 8) / 3;
-        String[] tabs = {"appearance", "colors", "effects.title"};
+        int tabWidth = (contentWidth - 12) / 4;
+        String[] tabs = {"appearance", "colors", "effects.title", "motion.tab"};
         for (int i = 0; i < tabs.length; i++) {
             int target = i;
             Button tab = addRenderableWidget(Button.builder(text(tabs[i]), button -> changePage(target))
-                .bounds(x + i * (tabWidth + 4), panelY + 36, i == 2 ? contentWidth - 2 * (tabWidth + 4) : tabWidth, 20).build());
+                .bounds(x + i * (tabWidth + 4), panelY + 36, i == 3 ? contentWidth - 3 * (tabWidth + 4) : tabWidth, 20).build());
             tab.active = page != i;
         }
 
-        if (page == 2) {
+        if (page == 3) {
+            addMotion(x, contentWidth);
+        } else if (page == 2) {
             effects.build(font, x, panelY, contentWidth, widget -> addRenderableWidget(widget));
         } else if (page == 1) {
             addColors(x, contentWidth);
@@ -103,6 +105,26 @@ public final class AuraSettingsScreen extends Screen {
         }).bounds(x + 2 * (buttonWidth + 4), panelY + 208, contentWidth - 2 * (buttonWidth + 4), 20)
                 .tooltip(Tooltip.create(text("reset_hint"))).build());
         saveButton.active = effects.valid();
+    }
+
+    private void addMotion(int x, int contentWidth) {
+        var animation = draft.animation();
+        addRenderableWidget(Button.builder(Component.translatable("screen.trueaura.motion.appear", text("motion." + animation.appearMode())), b -> {
+            updateDraft(draft.withAnimation(draft.animation().nextAppearMode())); buildControls();
+        }).bounds(x, panelY + 64, contentWidth - 40, 20).build());
+        addRenderableWidget(Button.builder(text("motion.test"), b -> AuraClient.replayPreview())
+            .bounds(x + contentWidth - 36, panelY + 64, 36, 20).tooltip(Tooltip.create(text("motion.test_hint"))).build());
+        var fadeIn = addRenderableWidget(new SettingSlider(x, panelY + 90, contentWidth, "motion.fade_in", .05, 5, animation.appearTicks() / 20.0,
+            value -> updateDraft(draft.withAnimation(draft.animation().withDurations((int) Math.round(value * 20), draft.animation().disappearTicks())))));
+        fadeIn.active = !animation.instantAppear();
+        addRenderableWidget(Button.builder(Component.translatable("screen.trueaura.motion.disappear", text(animation.instantDisappear() ? "motion.instant" : "motion.fade")), b -> {
+            updateDraft(draft.withAnimation(draft.animation().withDisappear(!draft.animation().instantDisappear()))); buildControls();
+        }).bounds(x, panelY + 116, contentWidth, 20).build());
+        var fadeOut = addRenderableWidget(new SettingSlider(x, panelY + 142, contentWidth, "motion.fade_out", .05, 5, animation.disappearTicks() / 20.0,
+            value -> updateDraft(draft.withAnimation(draft.animation().withDurations(draft.animation().appearTicks(), (int) Math.round(value * 20))))));
+        fadeOut.active = !animation.instantDisappear();
+        addRenderableWidget(new SettingSlider(x, panelY + 168, contentWidth, "motion.strength", 0, 2, animation.motionStrength(),
+            value -> updateDraft(draft.withAnimation(draft.animation().withMotion(value))))).setTooltip(Tooltip.create(text("motion.strength_hint")));
     }
 
     private void addAppearance(int x, int contentWidth) {
@@ -268,7 +290,7 @@ public final class AuraSettingsScreen extends Screen {
             graphics.fill(x + 65, panelY + 160, x + contentWidth, panelY + 173, 0xFF000000 | colorAt(selectedColor));
             graphics.renderOutline(x + 65, panelY + 160, contentWidth - 65, 13, 0xFFBBBBBB);
             graphics.drawString(font, text("picker.drag"), x, panelY + 175, 0xB5C5DF);
-        } else if (!choosingShape) {
+        } else if (page == 0 && !choosingShape) {
             graphics.drawWordWrap(font, text("draft_hint"), x, panelY + 170, panelWidth - 20, 0xB5C5DF);
         }
         int helpWidth = Math.max(60, panelX - 16);
@@ -320,7 +342,8 @@ public final class AuraSettingsScreen extends Screen {
         }
 
         private double settingValue() {
-            return min + value * (max - min);
+            double setting = min + value * (max - min);
+            return label.equals("motion.fade_in") || label.equals("motion.fade_out") ? Math.round(setting * 20) / 20.0 : setting;
         }
 
         @Override

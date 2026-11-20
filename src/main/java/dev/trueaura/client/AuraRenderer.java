@@ -37,9 +37,9 @@ public final class AuraRenderer {
             if (!own && remote == null) continue;
             AuraState animation = own ? state : remote.state();
             AuraSettings settings = own ? AuraClient.renderSettings() : remote.settings();
-            float opacity = own && AuraClient.isPreviewing() ? 1 : animation.opacity(event.getPartialTick());
+            float opacity = own && AuraClient.isPreviewing() ? AuraClient.previewOpacity(event.getPartialTick()) : animation.opacity(event.getPartialTick());
             if (opacity < 0.001f || (!(own && AuraClient.isPreviewing()) && player.distanceToSqr(camera) > 64 * 64)
-                || !event.getFrustum().isVisible(player.getBoundingBox().inflate(settings.scale() * (settings.custom() == null ? 2 : 8)))) continue;
+                || !event.getFrustum().isVisible(player.getBoundingBox().inflate(settings.scale() * (settings.custom() == null ? 4 : 10)))) continue;
             if (!eligible(player)) continue;
             selected.add(new DrawRequest(player, animation, settings, opacity));
             if (selected.size() >= 32) break;
@@ -83,11 +83,15 @@ public final class AuraRenderer {
             poses.scale(scale, scale, scale);
             Matrix4f matrix = poses.last().pose();
             VertexConsumer vertices = BUFFERS.getBuffer(renderType);
-            int alpha = Math.round(opacity * 255);
+            boolean rising = settings.animation().riseFromFeet();
+            int alpha = Math.round((rising ? Math.min(1, opacity * 6) : opacity) * 255);
             AuraMesh.VertexSink sink = (vx, vy, vz, u, v, layer) ->
                 vertices.vertex(matrix, vx, vy, vz)
                     .color(Math.round(layer * 127.5f), 255, 255, alpha)
                     .uv(u, v).endVertex();
+            double height = settings.custom() == null ? player.getBbHeight() + 1.4 : settings.custom().maxHeight(player.getBbHeight());
+            sink = state.motion().sample(partial).wrap(sink, height, state.time(partial) / 20, settings.animation().motionStrength());
+            if (rising) sink = AuraReveal.wrap(sink, opacity, state.time(partial) / 20);
             if (settings.custom() == null) AuraMesh.emit(time, player.getBbHeight(), settings.shape(), player.distanceToSqr(camera) > 16 * 16, sink);
             else CustomAuraMesh.emit(state.time(partial) / 20 * settings.speed(), player.getBbHeight(), settings.custom(), player.distanceToSqr(camera) > 16 * 16, sink);
             BUFFERS.endBatch(renderType);

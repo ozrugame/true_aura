@@ -13,7 +13,7 @@ import java.util.UUID;
 /** Bounded wire format. Only custom definitions add variable bytes; identity is server-owned. */
 final class AuraPacketCodec {
     static final int EFFECT_BYTES = 4 + AuraEffect.MAX_ID_BYTES + AuraEffect.MAX_PARAMETER_BYTES;
-    static final int UPDATE_BYTES = 40 + 2 * EFFECT_BYTES;
+    static final int UPDATE_BYTES = 53 + 2 * EFFECT_BYTES;
     static final int SNAPSHOT_BYTES = 17 + UPDATE_BYTES;
     record PlayerSnapshot(UUID playerId, AuraSnapshot snapshot) {}
     static final int REVISION_BYTES = Long.BYTES + UPDATE_BYTES;
@@ -74,6 +74,9 @@ final class AuraPacketCodec {
         buffer.put((byte) settings.shape().ordinal()).put((byte) (value.enabled() ? 1 : 0));
         writeEffect(buffer, settings.openEffect());
         writeEffect(buffer, settings.closeEffect());
+        var animation = settings.animation();
+        buffer.put((byte) ((animation.instantAppear() ? 1 : 0) | (animation.instantDisappear() ? 2 : 0) | (animation.riseFromFeet() ? 4 : 0)));
+        buffer.putShort((short) animation.appearTicks()).putShort((short) animation.disappearTicks()).putDouble(animation.motionStrength());
         byte[] custom = customBytes(settings);
         buffer.putShort((short) custom.length).put(custom);
     }
@@ -83,6 +86,10 @@ final class AuraPacketCodec {
                 buffer.getDouble(), buffer.getDouble(), buffer.getDouble(), AuraShape.fromId(Byte.toUnsignedInt(buffer.get())));
         boolean enabled = buffer.get() != 0;
         settings = settings.withEffect(true, readEffect(buffer)).withEffect(false, readEffect(buffer));
+        int flags = Byte.toUnsignedInt(buffer.get());
+        if ((flags & ~7) != 0) throw new IllegalArgumentException("Invalid animation flags");
+        settings = settings.withAnimation(new dev.trueaura.aura.AuraAnimation((flags & 1) != 0, (flags & 2) != 0,
+            Short.toUnsignedInt(buffer.getShort()), Short.toUnsignedInt(buffer.getShort()), buffer.getDouble(), (flags & 4) != 0));
         int size = Short.toUnsignedInt(buffer.getShort());
         if (size > CustomAura.MAX_BYTES || size > buffer.remaining()) throw new IllegalArgumentException("Invalid custom aura size");
         if (size > 0) {

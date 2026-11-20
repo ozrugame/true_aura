@@ -97,6 +97,22 @@ public final class AuraCommands {
                         field.equals("size") ? value : old.scale(), field.equals("speed") ? value : old.speed(), old.shape()));
                 })));
         }
+        for (boolean appearing : new boolean[]{true, false}) {
+            var mode = literal(appearing ? "appear" : "disappear");
+            for (String choice : appearing ? List.of("instant", "fade", "rise") : List.of("instant", "fade")) {
+                mode.then(literal(choice).executes(context -> settings(context, targets, old -> old.withAnimation(
+                    appearing ? (choice.equals("instant") ? old.animation().withAppear(true) : old.animation().withRise(choice.equals("rise"))) : old.animation().withDisappear(choice.equals("instant"))))));
+            }
+            set.then(mode);
+            set.then(literal(appearing ? "fade_in" : "fade_out").then(argument("seconds", DoubleArgumentType.doubleArg(.05, 5))
+                .executes(context -> settings(context, targets, old -> {
+                    int ticks = (int) Math.round(DoubleArgumentType.getDouble(context, "seconds") * 20);
+                    return old.withAnimation(old.animation().withDurations(appearing ? ticks : old.animation().appearTicks(),
+                        appearing ? old.animation().disappearTicks() : ticks));
+                }))));
+        }
+        set.then(literal("motion").then(argument("strength", DoubleArgumentType.doubleArg(0, 2))
+            .executes(context -> settings(context, targets, old -> old.withAnimation(old.animation().withMotion(DoubleArgumentType.getDouble(context, "strength")))))));
         set.then(literal("shape").then(argument("shape", StringArgumentType.word())
             .suggests((context, builder) -> SharedSuggestionProvider.suggest(
                 Arrays.stream(AuraShape.values()).map(shape -> shape.name().toLowerCase(Locale.ROOT)), builder))
@@ -174,11 +190,12 @@ public final class AuraCommands {
             AuraSnapshot snapshot = AuraNetwork.current(player);
             AuraSettings s = snapshot.settings();
             context.getSource().sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
-                "%s: %s | %s | intensity %.2f, size %.2f, speed %.2f | main %s, highlight %s, base %s | open %s %s | close %s %s",
+                "%s: %s | %s | intensity %.2f, size %.2f, speed %.2f | main %s, highlight %s, base %s | open %s %s | close %s %s | appear %s %.2fs, disappear %s %.2fs, motion %.2f",
                 player.getGameProfile().getName(), snapshot.enabled() ? "ON" : "OFF", (s.custom() == null ? s.shape().name().toLowerCase(Locale.ROOT) : s.custom().id()),
                 s.intensity(), s.scale(), s.speed(), AuraSettings.formatHex(s.mainColor()), AuraSettings.formatHex(s.highlightColor()),
                 AuraSettings.formatHex(s.baseColor()), s.openEffect().id(), s.openEffect().parameters(),
-                s.closeEffect().id(), s.closeEffect().parameters())), false);
+                s.closeEffect().id(), s.closeEffect().parameters(), s.animation().appearMode(), s.animation().appearTicks() / 20.0,
+                s.animation().instantDisappear() ? "instant" : "fade", s.animation().disappearTicks() / 20.0, s.animation().motionStrength())), false);
         }
         return players.size();
     }

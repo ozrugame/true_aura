@@ -9,6 +9,9 @@ import dev.trueaura.aura.AuraEffect;
 public final class AuraConfig {
     public static final ForgeConfigSpec SPEC;
     private static final ForgeConfigSpec.ConfigValue<String> CUSTOM;
+    private static final ForgeConfigSpec.BooleanValue INSTANT_APPEAR, INSTANT_DISAPPEAR, RISE_FROM_FEET;
+    private static final ForgeConfigSpec.IntValue APPEAR_TICKS, DISAPPEAR_TICKS;
+    private static final ForgeConfigSpec.DoubleValue MOTION;
     private static String cachedJson;
     private static dev.trueaura.aura.CustomAura cachedCustom;
     public static final ForgeConfigSpec.DoubleValue SCALE;
@@ -49,6 +52,14 @@ public final class AuraConfig {
         OPEN_PARAMETERS = builder.define("openParameters", "");
         CLOSE_PARAMETERS = builder.define("closeParameters", "");
         builder.pop();
+        builder.push("animation");
+        RISE_FROM_FEET = builder.comment("Grow flame tongues upward from the feet during gradual appearance.").define("riseFromFeet", true);
+        INSTANT_APPEAR = builder.define("instantAppear", false);
+        INSTANT_DISAPPEAR = builder.define("instantDisappear", false);
+        APPEAR_TICKS = builder.comment("Fade-in duration in ticks (20 ticks per second). Retained when instant mode is used.").defineInRange("appearTicks", 10, 1, 100);
+        DISAPPEAR_TICKS = builder.defineInRange("disappearTicks", 10, 1, 100);
+        MOTION = builder.comment("Movement-driven spring/ripple strength. 0 disables deformation.").defineInRange("motionStrength", 1.0, 0.0, 2.0);
+        builder.pop();
         SPEC = builder.build();
     }
 
@@ -57,7 +68,8 @@ public final class AuraConfig {
     public static AuraSettings settings() {
         return new AuraSettings(MAIN_COLOR.get(), HIGHLIGHT_COLOR.get(), BASE_COLOR.get(),
             INTENSITY.get(), SCALE.get(), SPEED.get(), SHAPE.get(),
-            new AuraEffect(OPEN_EFFECT.get(), OPEN_PARAMETERS.get()), new AuraEffect(CLOSE_EFFECT.get(), CLOSE_PARAMETERS.get()), custom());
+            new AuraEffect(OPEN_EFFECT.get(), OPEN_PARAMETERS.get()), new AuraEffect(CLOSE_EFFECT.get(), CLOSE_PARAMETERS.get()), custom(),
+            new dev.trueaura.aura.AuraAnimation(INSTANT_APPEAR.get(), INSTANT_DISAPPEAR.get(), APPEAR_TICKS.get(), DISAPPEAR_TICKS.get(), MOTION.get(), RISE_FROM_FEET.get()));
     }
 
     private static dev.trueaura.aura.CustomAura custom() {
@@ -70,6 +82,10 @@ public final class AuraConfig {
         return cachedCustom;
     }
     public static void save(AuraSettings settings) {
+        var animation = settings.animation();
+        RISE_FROM_FEET.set(animation.riseFromFeet());
+        INSTANT_APPEAR.set(animation.instantAppear()); INSTANT_DISAPPEAR.set(animation.instantDisappear());
+        APPEAR_TICKS.set(animation.appearTicks()); DISAPPEAR_TICKS.set(animation.disappearTicks()); MOTION.set(animation.motionStrength());
         CUSTOM.set(settings.custom() == null ? "" : settings.custom().toJson());
         MAIN_COLOR.set(settings.mainColor());
         HIGHLIGHT_COLOR.set(settings.highlightColor());

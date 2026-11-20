@@ -6,9 +6,16 @@ public final class AuraState {
     private float previousOpacity;
     private float opacity;
     private long ticks;
+    private dev.trueaura.aura.AuraAnimation animation = dev.trueaura.aura.AuraAnimation.DEFAULT;
+    private final AuraMotion motion = new AuraMotion();
+    public AuraMotion motion() { return motion; }
+    public void configure(dev.trueaura.aura.AuraAnimation value) { animation = value; snapIfInstant(); }
+    private void snapIfInstant() {
+        if (enabled ? animation.instantAppear() : animation.instantDisappear()) previousOpacity = opacity = enabled ? 1 : 0;
+    }
 
-    public void toggle() { enabled = !enabled; }
-    public void setEnabled(boolean value) { enabled = value; }
+    public void toggle() { setEnabled(!enabled); }
+    public void setEnabled(boolean value) { enabled = value; snapIfInstant(); }
 
     public void tick(boolean activeSession) {
         if (!activeSession) {
@@ -16,7 +23,8 @@ public final class AuraState {
             return;
         }
         previousOpacity = opacity;
-        opacity = clamp(opacity + (enabled ? 0.1f : -0.1f));
+        opacity = clamp(opacity + (enabled ? 1f / animation.appearTicks() : -1f / animation.disappearTicks()));
+        snapIfInstant();
         ticks++;
     }
 
@@ -24,6 +32,7 @@ public final class AuraState {
         enabled = false;
         previousOpacity = opacity = 0;
         ticks = 0;
+        motion.reset();
     }
 
     public boolean enabled() { return enabled; }

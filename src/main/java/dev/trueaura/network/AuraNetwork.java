@@ -23,7 +23,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 /** Optional, common-side protocol. All session state is touched on the server thread. */
 public final class AuraNetwork {
-    private static final String PROTOCOL = "5";
+    private static final String PROTOCOL = "6";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation("trueaura", "appearance"), () -> PROTOCOL,
             NetworkRegistry.acceptMissingOr(PROTOCOL), NetworkRegistry.acceptMissingOr(PROTOCOL));

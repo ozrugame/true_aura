@@ -4,7 +4,10 @@ import java.util.OptionalInt;
 
 public record AuraSettings(int mainColor, int highlightColor, int baseColor,
                            double intensity, double scale, double speed, AuraShape shape,
-                           AuraEffect openEffect, AuraEffect closeEffect, CustomAura custom) {
+                           AuraEffect openEffect, AuraEffect closeEffect, CustomAura custom, AuraAnimation animation) {
+    public AuraSettings(int mainColor, int highlightColor, int baseColor, double intensity, double scale, double speed, AuraShape shape, AuraEffect openEffect, AuraEffect closeEffect, CustomAura custom) {
+        this(mainColor, highlightColor, baseColor, intensity, scale, speed, shape, openEffect, closeEffect, custom, AuraAnimation.DEFAULT);
+    }
     public AuraSettings(int mainColor, int highlightColor, int baseColor, double intensity, double scale, double speed, AuraShape shape, AuraEffect openEffect, AuraEffect closeEffect) {
         this(mainColor, highlightColor, baseColor, intensity, scale, speed, shape, openEffect, closeEffect, null);
     }
@@ -14,6 +17,7 @@ public record AuraSettings(int mainColor, int highlightColor, int baseColor,
     }
     public static final AuraSettings DEFAULT = new AuraSettings(0xFFB30F, 0xFFF5A0, 0xB080FF, 1, 1, 1, AuraShape.FLAME);
     public AuraSettings {
+        if (animation == null) animation = AuraAnimation.DEFAULT;
         mainColor &= 0xFFFFFF;
         highlightColor &= 0xFFFFFF;
         baseColor &= 0xFFFFFF;
@@ -29,20 +33,23 @@ public record AuraSettings(int mainColor, int highlightColor, int baseColor,
     public AuraEffect effect(boolean opening) { return opening ? openEffect : closeEffect; }
     public AuraSettings withEffect(boolean opening, AuraEffect effect) {
         return new AuraSettings(mainColor, highlightColor, baseColor, intensity, scale, speed, shape,
-            opening ? effect : openEffect, opening ? closeEffect : effect, custom);
+            opening ? effect : openEffect, opening ? closeEffect : effect, custom, animation);
     }
     public AuraSettings withAppearance(double intensity, double scale, double speed, AuraShape shape) {
-        return new AuraSettings(mainColor, highlightColor, baseColor, intensity, scale, speed, shape, openEffect, closeEffect, shape == this.shape ? custom : null);
+        return new AuraSettings(mainColor, highlightColor, baseColor, intensity, scale, speed, shape, openEffect, closeEffect, shape == this.shape ? custom : null, animation);
     }
     public AuraSettings withColors(int main, int highlight, int base) {
-        return new AuraSettings(main, highlight, base, intensity, scale, speed, shape, openEffect, closeEffect, custom);
+        return new AuraSettings(main, highlight, base, intensity, scale, speed, shape, openEffect, closeEffect, custom, animation);
     }
     public AuraSettings withCustom(CustomAura definition) {
         return new AuraSettings(mainColor, highlightColor, baseColor, intensity, scale, speed,
-            definition == null ? shape : definition.pattern(), openEffect, closeEffect, definition);
+            definition == null ? shape : definition.pattern(), openEffect, closeEffect, definition, animation);
     }
     public AuraSettings withShape(AuraShape value) {
-        return new AuraSettings(mainColor, highlightColor, baseColor, intensity, scale, speed, value, openEffect, closeEffect, null);
+        return new AuraSettings(mainColor, highlightColor, baseColor, intensity, scale, speed, value, openEffect, closeEffect, null, animation);
+    }
+    public AuraSettings withAnimation(AuraAnimation value) {
+        return new AuraSettings(mainColor, highlightColor, baseColor, intensity, scale, speed, shape, openEffect, closeEffect, custom, value);
     }
     private static double finiteRange(double value, double min, double max) {
         return Double.isFinite(value) ? Math.max(min, Math.min(max, value)) : 1;

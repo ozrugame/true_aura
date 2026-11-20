@@ -3,12 +3,17 @@ plugins {
     id 'net.minecraftforge.gradle' version '6.0.54'
 }
 
-version = '0.9.0'
+version = '0.10.0'
 group = 'dev.trueaura'
 base { archivesName = 'trueaura' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 sourceSets {
+    motionTest {
+        java.srcDir 'tools/motion-test/java'
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
     importTest {
         java.srcDir 'tools/import-test/java'
         compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
@@ -40,7 +45,9 @@ minecraft {
             if (project.findProperty('auraImportTest') == 'true') {
                 if (project.findProperty('auraMultiTest') != 'true') args '--quickPlaySingleplayer', 'AuraImportTest'
             }
+            if (project.findProperty('auraMotionTest') == 'true' && project.findProperty('auraMultiTest') != 'true') args '--quickPlaySingleplayer', 'AuraMotionTest'
             mods { trueaura {
+                if (project.findProperty('auraMotionTest') == 'true') source sourceSets.motionTest
                 if (project.findProperty('auraImportTest') == 'true') source sourceSets.importTest
                 source sourceSets.main
                 if (project.findProperty('auraShaderTest') == 'true') source sourceSets.shaderTest
